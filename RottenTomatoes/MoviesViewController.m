@@ -31,15 +31,30 @@
     return self;
 }
 
+- (id)initWithMovieType:(MovieType)movieType {
+    self = [super init];
+    if (self) {
+        self.movieType = movieType;
+    }
+    return self;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
 
-    self.navigationItem.title = @"Movies";
+    if (self.movieType == DVD) {
+        self.navigationItem.title = @"DVD";
+        self.tabBarItem.image = [UIImage imageNamed: @"i.png"];
+    } else {
+        self.navigationItem.title = @"Box Office";
+        self.tabBarItem.image = [UIImage imageNamed: @"b.png"];
+    }
+    
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
-    self.tableView.rowHeight = 140;
+    self.tableView.rowHeight = 206;
     
     UINib *movieCellNib = [UINib nibWithNibName:@"MovieCell" bundle:nil];
     [self.tableView registerNib:movieCellNib forCellReuseIdentifier:@"MovieCell"];
@@ -65,6 +80,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     MovieCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MovieCell" forIndexPath:indexPath];
     cell.movie = self.movies[indexPath.row];
+    cell.clipsToBounds = YES;
     return cell;
 }
 
@@ -78,8 +94,13 @@
     self.networkErrorBackground.hidden = YES;
     self.networkErrorLabel.hidden = YES;
     
-    NSString *url = @"http://api.rottentomatoes.com/api/public/v1.0/lists/dvds/top_rentals.json?apikey=kxudhprxb22xxesjmrxhwm76";
-    
+    NSString *url;
+    if (self.movieType == DVD) {
+        url = @"http://api.rottentomatoes.com/api/public/v1.0/lists/dvds/top_rentals.json?apikey=kxudhprxb22xxesjmrxhwm76";
+    } else {
+        url = @"http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=kxudhprxb22xxesjmrxhwm76";
+    }
+        
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         if (connectionError) {
@@ -90,12 +111,10 @@
             NSMutableArray *movies = [[NSMutableArray alloc] init];
             for (NSDictionary *dictionary in ((NSDictionary *)object)[@"movies"]) {
                 Movie *movie = [[Movie alloc] initWithDictionary:dictionary];
-                
                 [movies addObject:movie];
             }
             
             self.movies = movies;
-            [self.tableView reloadData];
         }
         
         [SVProgressHUD dismiss];
@@ -103,6 +122,8 @@
         [refreshControlOrNil endRefreshing];
         NSAttributedString *refreshTitle = [[NSAttributedString alloc] initWithString:@"Pull to Refresh"];
         [refreshControlOrNil setAttributedTitle:refreshTitle];
+        
+        [self.tableView reloadData];
     }];
 }
 

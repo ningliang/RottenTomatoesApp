@@ -16,12 +16,16 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
 
-    MoviesViewController *moviesViewController = [[MoviesViewController alloc] init];
-    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:moviesViewController];
+    MoviesViewController *dvdMoviesViewController = [[MoviesViewController alloc] initWithMovieType:DVD];
+    UINavigationController *dvdNavController = [[UINavigationController alloc] initWithRootViewController:dvdMoviesViewController];
+    MoviesViewController *boxOfficeMoviesViewController = [[MoviesViewController alloc] initWithMovieType:BOX_OFFICE];
+    UINavigationController *boxOfficeNavController = [[UINavigationController alloc] initWithRootViewController:boxOfficeMoviesViewController];
     
-    self.window.rootViewController = navigationController;
+    UITabBarController *tabBarController = [[UITabBarController alloc] init];
+    tabBarController.viewControllers = [NSArray arrayWithObjects: dvdNavController, boxOfficeNavController, nil];
     
-    self.window.backgroundColor = [UIColor whiteColor];
+    self.window.rootViewController = tabBarController;
+    
     [self.window makeKeyAndVisible];
     return YES;
 }
